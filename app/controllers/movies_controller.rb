@@ -14,19 +14,35 @@ class MoviesController < ApplicationController
     @movies = Movie.all
     @all_ratings = ['G', 'PG', 'PG-13', 'R']
 
-    sort = params[:sort]
-    if sort == "title" then
-      @movies = Movie.all.sort_by {|movie| movie.title }
-    elsif sort == 'release_date' then
-      @movies = Movie.all.sort_by {|movie| movie.release_date }
-    end
-
+    session_ratings = session[:ratings]
     ratings = params[:ratings]
     if !ratings.nil? then
+      session[:ratings] = ratings
       ratings = ratings.keys
-      if ratings.length != 0 then
-        @movies = Movie.all.select {|movie| ratings.include? movie.rating }
-      end
+      @movies = @movies.select {|movie| ratings.include? movie.rating }
+    elsif !session_ratings.nil? then
+      params[:ratings] = session_ratings
+      session_ratings = session_ratings.keys
+      @movies = @movies.select {|movie| session_ratings.include? movie.rating }
+    end
+
+    session_sort = session[:sort]
+    sort = params[:sort]
+    if sort == "title" then
+      @movies = @movies.sort_by {|movie| movie.title }
+      session[:sort] = "title"
+    elsif sort == "release_date" then
+      @movies = @movies.sort_by {|movie| movie.release_date }
+      session[:sort] = "release_date"
+    elsif sort == "none" then
+      session.clear
+      @movies = Movie.all
+    elsif session_sort == "title" then
+      @movies = @movies.sort_by {|movie| movie.title }
+      params[:sort] = "title"
+    elsif session_sort == "release_date" then
+      @movies = @movies.sort_by {|movie| movie.release_date }
+      params[:sort] = "release_date"
     end
   end
 
