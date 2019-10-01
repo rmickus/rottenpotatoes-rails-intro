@@ -12,12 +12,21 @@ class MoviesController < ApplicationController
 
   def index
     @movies = Movie.all
+    @all_ratings = ['G', 'PG', 'PG-13', 'R']
 
     sort = params[:sort]
     if sort == "title" then
       @movies = Movie.all.sort_by {|movie| movie.title }
     elsif sort == 'release_date' then
       @movies = Movie.all.sort_by {|movie| movie.release_date }
+    end
+
+    ratings = params[:ratings]
+    if !ratings.nil? then
+      ratings = ratings.keys
+      if ratings.length != 0 then
+        @movies = Movie.all.select {|movie| ratings.include? movie.rating }
+      end
     end
   end
 
